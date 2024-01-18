@@ -39,8 +39,16 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
 
   const [loading, setLoading] = useState(false);
 
-  const { bio, name, website, location, photoURL, coverPhotoURL } =
-    user as User;
+  const {
+    bio,
+    name,
+    website,
+    location,
+    photoURL,
+    coverPhotoURL,
+    photolockusername,
+    photolockpassword
+  } = user as User;
 
   const [editUserData, setEditUserData] = useState<EditableUserData>({
     bio,
@@ -48,7 +56,9 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
     website,
     photoURL,
     location,
-    coverPhotoURL
+    coverPhotoURL,
+    photolockusername,
+    photolockpassword
   });
 
   const [userImages, setUserImages] = useState<UserImages>({
@@ -86,7 +96,9 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
       'name',
       'bio',
       'location',
-      'website'
+      'website',
+      'photolockusername',
+      'photolockpassword'
     ];
 
     const trimmedTexts = trimmedKeys.reduce(
@@ -177,7 +189,9 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
       website,
       photoURL,
       location,
-      coverPhotoURL
+      coverPhotoURL,
+      photolockusername,
+      photolockpassword
     });
 
   const handleChange =
@@ -228,6 +242,18 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
       label: 'Website',
       inputId: 'website',
       inputValue: editUserData.website,
+      inputLimit: 100
+    },
+    {
+      label: 'PhotoLock Username',
+      inputId: 'photolockusername',
+      inputValue: editUserData.photolockusername,
+      inputLimit: 100
+    },
+    {
+      label: 'PhotoLock Password',
+      inputId: 'photolockpassword',
+      inputValue: editUserData.photolockpassword,
       inputLimit: 100
     }
   ];

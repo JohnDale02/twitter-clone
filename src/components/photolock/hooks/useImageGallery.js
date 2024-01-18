@@ -15,6 +15,7 @@ const useImageGallery = (cameraNumber) => {
     };
 
     if (cameraNumber) {
+      console.log('Fetching images from S3');
       fetchImages(); // Initial fetch
       intervalId = setInterval(fetchImages, pollInterval); // Start polling
     }

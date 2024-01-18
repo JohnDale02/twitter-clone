@@ -1,172 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 .widget {
-    background-color: #f4f4f4; /* Light grey background */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    padding: 20px; /* Spacing inside the widget */
-    max-width: 500px; /* Maximum width of the widget */
-    margin: 20px auto; /* Center the widget with margin */
-    font-family: 'Arial', sans-serif; /* Font family */
-    color: #333; /* Text color */
-  }
+  font-family: 'Poppins', sans-serif;
+}
 
-  
 .titleContainer {
-    height: 150px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-    margin-bottom: 20px; /* Adjust as needed */
-    padding-bottom: 0px;
+  margin-bottom: 20px; /* Adjust as needed */
+  padding-bottom: 0px;
 
-    backdrop-filter: blur(20px);
-    background: url("../public/images/security.jpg");
-    background-position: center; /* Centers the image */
-    background-size: cover; /* Cover ensures the entire container is covered */
-    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
-    color: white;
+  backdrop-filter: blur(20px);
+  background: url('../public/images/security.jpg');
+  background-position: center; /* Centers the image */
+  background-size: cover; /* Cover ensures the entire container is covered */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  color: white;
 
-    border: 2px solid rgba(255, 255, 255, .2);
-    border-radius: 10px;
-   
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .pageTitle {
-    font-size: 48px; /* Large font size for the title */
+  font-size: 48px; /* Large font size for the title */
 }
 
 .pageSubtitle {
-    font-size: 20px; /* Large font size for the title */
-    padding-bottom: 10px;
+  font-size: 20px; /* Large font size for the title */
+  padding-bottom: 10px;
 }
 
 .wrapper {
-    width: 420px;
-    background-color: transparent;
-    border: 2px solid rgba(255, 255, 255, .2);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
-    color: white;
-    border-radius: 10px;
-    padding: 30px 40px;
-    margin-left: auto;
-    margin-right: auto;
+  width: 420px;
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  color: white;
+  border-radius: 10px;
+  padding: 30px 40px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .wrapper h1 {
-    font-size: 36px;
-    text-align: center;
+  font-size: 36px;
+  text-align: center;
 }
 
 .wrapper .inputBox {
-    position: relative;
-    width: 100%;
-    height: 50px;
-    margin: 30px 0;
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin: 30px 0;
 }
 
 .inputBox input {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    border: 2px solid rgba(255, 255, 255, .2);
-    border-radius: 40px;
-    font-size: 16px;
-    color: white;
-    padding: 20px 45px 20px 20px;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 16px;
+  color: white;
+  padding: 20px 45px 20px 20px;
 }
 
-.inputBox input::placeholder{
-    color: white;
+.inputBox input::placeholder {
+  color: white;
 }
 
 .inputBox i {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 20px;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
 }
 
 .wrapper .rememberForget {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14.5px;
-    margin: -15px 0 15px; 
+  display: flex;
+  justify-content: space-between;
+  font-size: 14.5px;
+  margin: -15px 0 15px;
 }
 
 .rememberForget label input {
-    accent-color: #fff;
-    margin-right: 3px;
+  accent-color: #fff;
+  margin-right: 3px;
 }
 
 .rememberForget a {
-    color: #fff;
-    text-decoration: none;
+  color: #fff;
+  text-decoration: none;
 }
 
 .rememberForget a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .wrapper .btn {
-    width: 100%;
-    height: 45px;
-    background-color: #3498db;
-    border: none;
-    outline: none;
-    border-radius: 40px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
-    cursor: pointer;
-    font-size: 16px;
-    color: #333;
-    font-weight: 600;
+  width: 100%;
+  height: 45px;
+  background-color: #3498db;
+  border: none;
+  outline: none;
+  border-radius: 40px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
 }
 
 .wrapper .btn:hover {
-    background-color: #2980b9;
+  background-color: #2980b9;
 }
 
 .wrapper .registerLink {
-    font-size: 14.5px;
-    text-align: center;
-    margin: 20px 0 15px;
+  font-size: 14.5px;
+  text-align: center;
+  margin: 20px 0 15px;
 }
 
 .registerLink p a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .registerLink p a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
+/* Modal.module.css */
+.albumModalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.75
+  ); /* Darker overlay for better focus on the modal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2001; /* Ensure this is above all other content */
+}
 
+.albumModalBody {
+  background: #15202b; /* Twitter's dark mode background color */
+  border-radius: 16px; /* Slightly larger border-radius for a softer look */
+  padding: 24px; /* Increase padding for better spacing */
+  max-width: 500px; /* Constrain the width to not be too wide */
+  width: calc(
+    100% - 32px
+  ); /* Make sure it's responsive but with a maximum width */
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Add a subtle shadow for depth */
+  z-index: 2002;
+  color: #ffffff; /* Text color */
+  font-family: 'Twitter Chirp', sans-serif; /* Use Twitter's font if available */
+  animation: modalFadeIn 0.3s ease-out; /* Smooth fade-in effect */
+  display: flex;
+  flex-direction: column;
+}
+
+.albumModalTitle {
+  font-size: 1.5rem; /* Larger font size for the title */
+  font-weight: bold;
+  color: #1da1f2; /* Twitter's brand color */
+  margin-bottom: 24px; /* More space below the title */
+  text-align: center; /* Centered text */
+  border-bottom: 1px solid #38444d; /* Separator line for the title */
+  padding-bottom: 16px; /* Space below the title text */
+}
+
+/* If you want to add animations for the modal */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* Mobile styles using a media query */
 @media (max-width: 600px) {
-    .wrapper .rememberForget {
-        font-size: 14px; /* Smaller font size for better readability */
-    }
+  .wrapper .rememberForget {
+    font-size: 14px; /* Smaller font size for better readability */
+  }
 
-    .wrapper .registerLink,
-    .wrapper .rememberForget {
-        margin: 10px 0; /* Less margin */
-    }
+  .wrapper .registerLink,
+  .wrapper .rememberForget {
+    margin: 10px 0; /* Less margin */
+  }
 
-    /* Ensure loader is a reasonable size on mobile */
-    .loader {
+  /* Ensure loader is a reasonable size on mobile */
+  .loader {
     border-width: 8px; /* Smaller border for the loader */
     width: 15px; /* Smaller width */
     height: 15px; /* Smaller height */
+  }
 }
-}
-

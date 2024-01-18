@@ -20,11 +20,20 @@ export type User = {
   totalPhotos: number;
   pinnedTweet: string | null;
   coverPhotoURL: string | null;
+  photolockusername: string | null;
+  photolockpassword: string | null;
 };
 
 export type EditableData = Extract<
   keyof User,
-  'bio' | 'name' | 'website' | 'photoURL' | 'location' | 'coverPhotoURL'
+  | 'bio'
+  | 'name'
+  | 'website'
+  | 'photoURL'
+  | 'location'
+  | 'coverPhotoURL'
+  | 'photolockusername'
+  | 'photolockpassword'
 >;
 
 export type EditableUserData = Pick<User, EditableData>;

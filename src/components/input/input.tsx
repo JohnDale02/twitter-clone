@@ -25,8 +25,9 @@ import type { User } from '@lib/types/user';
 import type { Tweet } from '@lib/types/tweet';
 import type { FilesWithId, ImagesPreview, ImageData } from '@lib/types/file';
 
-import PhotoLock from "../photolock/PhotoLock" ///////// Added
+import PhotoLock from '../photolock/PhotoLock'; ///////// Added
 import { ErrorType } from 'aws-sdk/clients/es';
+import PhotoLockModal from '../modal/photo-lock-modal';
 
 type InputProps = {
   modal?: boolean;
@@ -57,7 +58,8 @@ export function Input({
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [visited, setVisited] = useState(false);
-  const [isPhotoLockVisible, setIsPhotoLockVisible] = useState(false); ///////////// Added 
+
+  const [isPhotoLockVisible, setIsPhotoLockVisible] = useState(false); ///////////// Added
 
   const { user, isAdmin } = useAuth();
   const { name, username, photoURL } = user as User;
@@ -66,6 +68,11 @@ export function Input({
 
   const previewCount = imagesPreview.length;
   const isUploadingImages = !!previewCount;
+
+  const photoLockCredentials = {
+    username: user?.photolockusername,
+    password: user?.photolockpassword
+  };
 
   useEffect(
     () => {
@@ -155,9 +162,9 @@ export function Input({
     inputRef.current?.focus();
   };
 
-  const handleAuthImageUpload = () : void => {
+  const handleAuthImageUpload = (): void => {
     togglePhotoLockVisibility();
-  }
+  };
 
   const removeImage = (targetId: string) => (): void => {
     setSelectedImages(selectedImages.filter(({ id }) => id !== targetId));
@@ -204,15 +211,15 @@ export function Input({
 
   const defaultStyle = {}; // Replace with your style object if needed
   const handleLoginSuccess = () => {
-  // Handle login success. Replace with your logic.
-  console.log("Login successful");
+    // Handle login success. Replace with your logic.
+    console.log('Login successful');
   };
   const handleLoginFailure = (error: ErrorType) => {
-  // Handle login failure. Replace with your logic.
-  console.error("Login failed", error);
+    // Handle login failure. Replace with your logic.
+    console.error('Login failed', error);
   };
 
-/////////////////////////
+  /////////////////////////
 
   const formId = useId();
 
@@ -226,89 +233,100 @@ export function Input({
     !isCharLimitExceeded && (isValidInput || isUploadingImages);
 
   return (
-    <form
-      className={cn('flex flex-col', {
-        '-mx-4': reply,
-        'gap-2': replyModal,
-        'cursor-not-allowed': disabled
-      })}
-      onSubmit={handleSubmit}
-    >
-      {loading && (
-        <motion.i className='h-1 animate-pulse bg-main-accent' {...variants} />
-      )}
-      {children}
-      {reply && visited && (
-        <motion.p
-          className='ml-[75px] -mb-2 mt-2 text-light-secondary dark:text-dark-secondary'
-          {...fromTop}
+    <>
+      {isPhotoLockVisible && (
+        <PhotoLockModal
+          isOpen={isPhotoLockVisible}
+          onClose={togglePhotoLockVisibility}
         >
-          Replying to{' '}
-          <Link href={`/user/${parent?.username as string}`}>
-            <a className='custom-underline text-main-accent'>
-              {parent?.username as string}
-            </a>
-          </Link>
-        </motion.p>
+          <PhotoLock photoLockCredentials={photoLockCredentials} />
+        </PhotoLockModal>
       )}
-      <label
-        className={cn(
-          'hover-animation grid w-full grid-cols-[auto,1fr] gap-3 px-4 py-3',
-          reply
-            ? 'pt-3 pb-1'
-            : replyModal
-            ? 'pt-0'
-            : 'border-b-2 border-light-border dark:border-dark-border',
-          (disabled || loading) && 'pointer-events-none opacity-50'
-        )}
-        htmlFor={formId}
+
+      <form
+        className={cn('flex flex-col', {
+          '-mx-4': reply,
+          'gap-2': replyModal,
+          'cursor-not-allowed': disabled
+        })}
+        onSubmit={handleSubmit}
       >
-        <UserAvatar src={photoURL} alt={name} username={username} />
-        <div className='flex w-full flex-col gap-4'>
-          <InputForm
-            modal={modal}
-            reply={reply}
-            formId={formId}
-            visited={visited}
-            loading={loading}
-            inputRef={inputRef}
-            replyModal={replyModal}
-            inputValue={inputValue}
-            isValidTweet={isValidTweet}
-            isUploadingImages={isUploadingImages}
-            sendTweet={sendTweet}
-            handleFocus={handleFocus}
-            discardTweet={discardTweet}
-            handleChange={handleChange}
-            handleImageUpload={handleImageUpload}
+        {loading && (
+          <motion.i
+            className='h-1 animate-pulse bg-main-accent'
+            {...variants}
+          />
+        )}
+        {children}
+        {reply && visited && (
+          <motion.p
+            className='-mb-2 ml-[75px] mt-2 text-light-secondary dark:text-dark-secondary'
+            {...fromTop}
           >
-            {isUploadingImages && (
-              <ImagePreview
-                imagesPreview={imagesPreview}
-                previewCount={previewCount}
-                removeImage={!loading ? removeImage : undefined}
-              />
-            )}
-          </InputForm>
-          <AnimatePresence initial={false}>
-            {(reply ? reply && visited && !loading : !loading) && (
-              <InputOptions
-                reply={reply}
-                modal={modal}
-                inputLimit={inputLimit}
-                inputLength={inputLength}
-                isValidTweet={isValidTweet}
-                isCharLimitExceeded={isCharLimitExceeded}
-                handleImageUpload={handleImageUpload}
-                handleAuthImageUpload={handleAuthImageUpload}
-              />
-            )}
-          </AnimatePresence>
-          {isPhotoLockVisible && (
-            <PhotoLock/>
-            )}
-        </div>
-      </label>
-    </form>
+            Replying to{' '}
+            <Link href={`/user/${parent?.username}`}>
+              <a className='custom-underline text-main-accent'>
+                {parent?.username}
+              </a>
+            </Link>
+          </motion.p>
+        )}
+        <label
+          className={cn(
+            'hover-animation grid w-full grid-cols-[auto,1fr] gap-3 px-4 py-3',
+            reply
+              ? 'pb-1 pt-3'
+              : replyModal
+              ? 'pt-0'
+              : 'border-b-2 border-light-border dark:border-dark-border',
+            (disabled || loading) && 'pointer-events-none opacity-50'
+          )}
+          htmlFor={formId}
+        >
+          <UserAvatar src={photoURL} alt={name} username={username} />
+          <div className='flex w-full flex-col gap-4'>
+            <InputForm
+              modal={modal}
+              reply={reply}
+              formId={formId}
+              visited={visited}
+              loading={loading}
+              inputRef={inputRef}
+              replyModal={replyModal}
+              inputValue={inputValue}
+              isValidTweet={isValidTweet}
+              isUploadingImages={isUploadingImages}
+              sendTweet={sendTweet}
+              handleFocus={handleFocus}
+              discardTweet={discardTweet}
+              handleChange={handleChange}
+              handleImageUpload={handleImageUpload}
+            >
+              {isUploadingImages && (
+                <ImagePreview
+                  imagesPreview={imagesPreview}
+                  previewCount={previewCount}
+                  removeImage={removeImage}
+                />
+              )}
+            </InputForm>
+            <AnimatePresence initial={false}>
+              {(reply ? reply && visited && !loading : !loading) && (
+                <InputOptions
+                  reply={reply}
+                  modal={modal}
+                  inputLimit={inputLimit}
+                  inputLength={inputLength}
+                  isValidTweet={isValidTweet}
+                  isCharLimitExceeded={isCharLimitExceeded}
+                  handleImageUpload={handleImageUpload}
+                  handleAuthImageUpload={handleAuthImageUpload}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </label>
+      </form>
+    </>
   );
 }
