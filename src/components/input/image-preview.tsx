@@ -82,6 +82,8 @@ export function ImagePreview({
     <div
       className={cn(
         'grid grid-cols-2 grid-rows-2 rounded-2xl',
+        imagesPreview.length === 1 &&
+          '!h-auto max-h-80 min-h-[20rem] w-[28rem]',
         viewTweet
           ? 'h-[51vw] xs:h-[42vw] md:h-[305px]'
           : 'h-[42vw] xs:h-[37vw] md:h-[271px]',
@@ -135,13 +137,14 @@ export function ImagePreview({
               )}
               previewCount={previewCount}
               layout='fill'
+              objectFit='cover'
               src={src}
               alt={alt}
               useSkeleton={isTweet}
             />
             {removeImage && (
               <Button
-                className='group absolute top-0 left-0 translate-x-1 translate-y-1
+                className='group absolute left-0 top-0 translate-x-1 translate-y-1
                            bg-light-primary/75 p-1 backdrop-blur-sm 
                            hover:bg-image-preview-hover/75'
                 onClick={preventBubbling(removeImage(id))}

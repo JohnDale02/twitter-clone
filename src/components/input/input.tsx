@@ -1,3 +1,4 @@
+// input.tsx
 import Link from 'next/link';
 import { useState, useEffect, useRef, useId } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -28,6 +29,13 @@ import type { FilesWithId, ImagesPreview, ImageData } from '@lib/types/file';
 import PhotoLock from '../photolock/PhotoLock'; ///////// Added
 import { ErrorType } from 'aws-sdk/clients/es';
 import PhotoLockModal from '../modal/photo-lock-modal';
+import { fetchImageAsBlob } from '../photolock/cognito/config';
+
+const uniqueId = () => {
+  return Array.from({ length: 20 }, () =>
+    Math.floor(Math.random() * 36).toString(36)
+  ).join('');
+};
 
 type InputProps = {
   modal?: boolean;
@@ -162,10 +170,6 @@ export function Input({
     inputRef.current?.focus();
   };
 
-  const handleAuthImageUpload = (): void => {
-    togglePhotoLockVisibility();
-  };
-
   const removeImage = (targetId: string) => (): void => {
     setSelectedImages(selectedImages.filter(({ id }) => id !== targetId));
     setImagesPreview(imagesPreview.filter(({ id }) => id !== targetId));
@@ -209,14 +213,56 @@ export function Input({
     setIsPhotoLockVisible(!isPhotoLockVisible);
   };
 
-  const defaultStyle = {}; // Replace with your style object if needed
-  const handleLoginSuccess = () => {
-    // Handle login success. Replace with your logic.
-    console.log('Login successful');
+  const onAuthMediaClick = (): void => {
+    togglePhotoLockVisibility();
   };
-  const handleLoginFailure = (error: ErrorType) => {
-    // Handle login failure. Replace with your logic.
-    console.error('Login failed', error);
+
+  const handleAuthImageUpload = async (
+    imageKey: string,
+    idToken: string,
+    globalCameraNumber: number
+  ) => {
+    console.log(
+      'Downloading Image for tweet: ImageKey: ',
+      imageKey,
+      'camera number: ',
+      globalCameraNumber
+    );
+    try {
+      const blob = await fetchImageAsBlob(
+        imageKey,
+        idToken,
+        globalCameraNumber
+      );
+
+      // Generate a unique ID for the image
+      const uniqueImageId = uniqueId();
+
+      // Rename the file with the unique ID
+      const uniqueFileName = `${uniqueImageId}.png`;
+      const file = new File([blob], uniqueFileName, { type: 'image/png' });
+
+      // Add id property to the file
+      const fileWithId = Object.assign(file, { id: uniqueImageId });
+
+      // Update selected images and image previews
+      setSelectedImages((prevSelectedImages) => [
+        ...prevSelectedImages,
+        fileWithId
+      ]);
+      setImagesPreview((prevImagesPreview) => [
+        ...prevImagesPreview,
+        {
+          id: uniqueImageId,
+          src: URL.createObjectURL(blob),
+          alt: uniqueFileName
+        }
+      ]);
+
+      togglePhotoLockVisibility();
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    }
   };
 
   /////////////////////////
@@ -239,7 +285,10 @@ export function Input({
           isOpen={isPhotoLockVisible}
           onClose={togglePhotoLockVisibility}
         >
-          <PhotoLock photoLockCredentials={photoLockCredentials} />
+          <PhotoLock
+            photoLockCredentials={photoLockCredentials}
+            handleAuthImageUpload={handleAuthImageUpload}
+          />
         </PhotoLockModal>
       )}
 
@@ -320,7 +369,7 @@ export function Input({
                   isValidTweet={isValidTweet}
                   isCharLimitExceeded={isCharLimitExceeded}
                   handleImageUpload={handleImageUpload}
-                  handleAuthImageUpload={handleAuthImageUpload}
+                  onAuthMediaClick={onAuthMediaClick}
                 />
               )}
             </AnimatePresence>

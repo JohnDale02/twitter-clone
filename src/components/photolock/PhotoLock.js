@@ -4,7 +4,11 @@ import ImageGallery from './components/ImageGallery';
 import ImageModal from './components/ImageModal';
 import Slider from './components/Slider';
 import SignatureModal from './components/SignatureModal';
-import { downloadImageAndJson } from './cognito/config'; // Adjust the path as needed
+import {
+  downloadImageAndJson,
+  poolData,
+  getCognitoIdentityCredentials
+} from './cognito/config'; // Adjust the path as needed
 
 import useAuthentication from './hooks/useAuthentication';
 import useImageGallery from './hooks/useImageGallery';
@@ -15,12 +19,8 @@ import {
   AuthenticationDetails,
   CognitoUser
 } from 'amazon-cognito-identity-js';
-import {
-  poolData,
-  getCognitoIdentityCredentials
-} from 'components/photolock/cognito/config';
 
-const PhotoLock = ({ photoLockCredentials }) => {
+const PhotoLock = ({ photoLockCredentials, handleAuthImageUpload }) => {
   const { isLoggedIn, userDetails, login, logout, errorMessage } =
     useAuthentication();
 
@@ -35,6 +35,17 @@ const PhotoLock = ({ photoLockCredentials }) => {
   const images = useImageGallery(userDetails?.cameraNumber);
   console.log('Images we recieved are : ', images);
 
+  const handleImageSelect = (imageKey) => {
+    if (userDetails) {
+      handleAuthImageUpload(
+        imageKey,
+        userDetails.idToken,
+        userDetails.cameraNumber
+      );
+    }
+  };
+
+  /// NOT USED BECAUSE ONCLICK = DOWNLOAD //////
   const openFullImage = async (imageData) => {
     setFullImage(imageData.imageUrl);
     setImageFilename(imageData.imageFilename);
@@ -73,6 +84,8 @@ const PhotoLock = ({ photoLockCredentials }) => {
       );
     }
   };
+
+  ///////////////////////////////////////////
 
   const onLoginSuccess = ({ username, password, idToken, cameraNumber }) => {
     console.log('CameraNumber onLoginSuccess passed to', cameraNumber);
@@ -141,7 +154,7 @@ const PhotoLock = ({ photoLockCredentials }) => {
           <Slider numColumns={numColumns} setNumColumns={setNumColumns} />
           <ImageGallery
             images={images}
-            onImageSelect={openFullImage}
+            handleImageSelect={handleImageSelect}
             numColumns={numColumns}
           />
           <ImageModal

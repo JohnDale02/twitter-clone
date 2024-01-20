@@ -41,6 +41,14 @@ export function ImageModal({
 
   const requireArrows = handleNextIndex && previewCount > 1;
 
+  /////////////// Added function below ///////////
+  const isVerifiedByPhotoLock = (imageData: ImageData) => {
+    // Implement your logic to determine if the image is verified
+    // For example, you could check a property in the imageData
+    // return imageData.isVerified;
+    return true; // This is just for demonstration purposes
+  };
+
   useEffect(() => {
     if (
       tweet &&
@@ -111,6 +119,12 @@ export function ImageModal({
                 alt={alt}
                 onClick={preventBubbling()}
               />
+              {/* Add the verified badge here */}
+              {isVerifiedByPhotoLock(imageData) && (
+                <div className='trim-alt accent-tab absolute bottom-0 left-0 mx-2 mb-2 translate-y-4 rounded-md bg-main-background/40 px-2 py-1 text-sm text-light-primary/80 opacity-0 transition hover:bg-main-accent hover:text-white focus-visible:translate-y-0 focus-visible:bg-main-accent focus-visible:text-white focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 dark:text-dark-primary/80'>
+                  Verified by PhotoLock
+                </div>
+              )}
               <a
                 className='trim-alt accent-tab absolute bottom-0 right-0 mx-2 mb-2 translate-y-4
                            rounded-md bg-main-background/40 px-2 py-1 text-sm text-light-primary/80 opacity-0
@@ -126,7 +140,7 @@ export function ImageModal({
               </a>
             </picture>
             <a
-              className='custom-underline absolute left-0 -bottom-7 font-medium text-light-primary/80
+              className='custom-underline absolute -bottom-7 left-0 font-medium text-light-primary/80
                          decoration-transparent underline-offset-2 transition hover:text-light-primary hover:underline
                          hover:decoration-light-primary focus-visible:text-light-primary dark:text-dark-primary/80 
                          dark:hover:text-dark-primary dark:hover:decoration-dark-primary dark:focus-visible:text-dark-primary'

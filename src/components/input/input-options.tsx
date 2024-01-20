@@ -1,3 +1,4 @@
+// input-options.tsx
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@components/ui/button';
@@ -63,7 +64,7 @@ type InputOptionsProps = {
   handleImageUpload: (
     e: ChangeEvent<HTMLInputElement> | ClipboardEvent<HTMLTextAreaElement>
   ) => void;
-  handleAuthImageUpload: () => void;
+  onAuthMediaClick: () => void;
 };
 
 export function InputOptions({
@@ -74,7 +75,7 @@ export function InputOptions({
   isValidTweet,
   isCharLimitExceeded,
   handleImageUpload,
-  handleAuthImageUpload
+  onAuthMediaClick
 }: InputOptionsProps): JSX.Element {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
@@ -88,13 +89,13 @@ export function InputOptions({
   return (
     <motion.div className='flex justify-between' {...variants}>
       <div
-        className='flex text-main-accent xs:[&>button:nth-child(n+6)]:hidden 
-                   md:[&>button]:!block [&>button:nth-child(n+4)]:hidden'
+        className='flex text-main-accent [&>button:nth-child(n+4)]:hidden 
+                   xs:[&>button:nth-child(n+6)]:hidden md:[&>button]:!block'
       >
         <input
           className='hidden'
           type='file'
-          accept='image/*'
+          accept='image/*, video/*'
           onChange={handleImageUpload}
           ref={inputFileRef}
           multiple
@@ -107,11 +108,9 @@ export function InputOptions({
               if (iconName === 'PhotoIcon') {
                 inputFileRef.current?.click();
               } else if (iconName === 'LockClosedIcon') {
-                console.log("We are calling the handleAuthImageUpload")
-                handleAuthImageUpload(); // Invoke the callback when AuthMedia is clicked
-              }
-              else{
-                undefined
+                onAuthMediaClick(); // Invoke the callback when AuthMedia is clicked
+              } else {
+                undefined;
               }
             }}
             disabled={disabled}

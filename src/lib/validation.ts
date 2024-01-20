@@ -12,10 +12,13 @@ const IMAGE_EXTENSIONS = [
   'pjp',
   'png',
   'svg',
-  'webp'
+  'webp',
+  'avi',
+  'mov',
+  'mp4'
 ] as const;
 
-type ImageExtensions = typeof IMAGE_EXTENSIONS[number];
+type ImageExtensions = (typeof IMAGE_EXTENSIONS)[number];
 
 function isValidImageExtension(
   extension: string

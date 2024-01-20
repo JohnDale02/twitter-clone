@@ -1,11 +1,11 @@
 import React from 'react';
 import imageStyles from '../styles/images.module.css';
 
-const ImageGallery = ({ images, onImageSelect, numColumns = 3 }) => {
-  console.log("Images in Gallery function: " + images); // Place this in `Login.js` and `ImageGallery.js`
+const ImageGallery = ({ images, handleImageSelect, numColumns = 3 }) => {
+  console.log('Images in Gallery function: ' + images); // Place this in `Login.js` and `ImageGallery.js`
 
   return (
-    <div 
+    <div
       className={imageStyles.imgGallery}
       style={{ '--num-columns': numColumns }}
     >
@@ -14,7 +14,7 @@ const ImageGallery = ({ images, onImageSelect, numColumns = 3 }) => {
           key={index}
           src={image.imageUrl}
           alt={`Image ${index}`}
-          onClick={() => onImageSelect(image)}
+          onClick={() => handleImageSelect(image.imageFilename)}
         />
       ))}
     </div>
