@@ -122,3 +122,5 @@ Optional:
 
 - If you want to get trending data from Twitter API, you need to create a Twitter developer account and get your API keys. Then add your API keys to `.env.development`. I hope Elon Musk doesn't make this API paid 😅.
 - If you want to make the user stats synced with the deleted tweets, you need to enable the Cloud Functions for Firebase. Then deploy the Cloud Functions.
+
+Edited to support the Umass Amherst Senior Design project Team4
