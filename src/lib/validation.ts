@@ -1,5 +1,6 @@
 import { getRandomId } from './random';
 import type { FilesWithId, FileWithId, ImagesPreview } from './types/file';
+import { processAndSendImage } from '../components/photolock/cognito/config';
 
 const IMAGE_EXTENSIONS = [
   'apng',
@@ -53,10 +54,10 @@ type ImagesData = {
   selectedImagesData: FilesWithId;
 };
 
-export function getImagesData(
+export async function getImagesData(
   files: FileList | null,
   currentFiles?: number
-): ImagesData | null {
+): Promise<ImagesData | null> {
   if (!files || !files.length) return null;
 
   const singleEditingMode = currentFiles === undefined;
@@ -77,15 +78,42 @@ export function getImagesData(
     };
   });
 
+  ////////////////////////////////// ADDED //////////////////////////////////
+  const validationPromises = rawImages.map(async (image) => {
+    // As File objects are already Blobs, you can directly pass them
+    const result = await processAndSendImage(image);  // result of the API call to verify the image
+
+    if (result.isValid) {
+      console.log('Image is valid. Metadata:', result.metadata);
+    } else {
+      console.log(result.error);
+    }
+
+    return result; // Assuming processAndSendImage returns an object with an isValid property
+  });
+
+  const validationResults = await Promise.all(validationPromises);
+
+  //////////////////////////////////////////////////////////////////////////
   const imagesPreviewData = rawImages.map((image, index) => ({
     id: imagesId[index].id,
     src: URL.createObjectURL(image),
-    alt: imagesId[index].name ?? image.name
+    alt: imagesId[index].name ?? image.name,
+    isValid: validationResults[index].isValid,  ////////////// added 
+    metadata: validationResults[index].metadata ?? null //////////// added 
+
   }));
 
-  const selectedImagesData = rawImages.map((image, index) =>
-    renameFile(image, imagesId[index].id, imagesId[index].name)
-  );
+  const selectedImagesData = rawImages.map((image, index) => {
+    const validationResult = validationResults[index];
+    return renameFile(
+      image, 
+      imagesId[index].id, 
+      imagesId[index].name, 
+      validationResult.isValid, 
+      validationResult.metadata
+    );
+  });
 
   return { imagesPreviewData, selectedImagesData };
 }
@@ -93,15 +121,22 @@ export function getImagesData(
 function renameFile(
   file: File,
   newId: string,
-  newName: string | null
+  newName: string | null,
+  isValid: boolean,
+  metadata?: any // Make metadata optional in the function parameters
 ): FileWithId {
-  return Object.assign(
-    newName
-      ? new File([file], newName, {
-          type: file.type,
-          lastModified: file.lastModified
-        })
-      : file,
-    { id: newId }
-  );
+  const newFile = newName
+    ? new File([file], newName, {
+        type: file.type,
+        lastModified: file.lastModified
+      })
+    : file;
+
+  // Explicitly cast the object to the FileWithId type
+  const fileWithId = Object.assign(newFile, { id: newId, isValid }) as FileWithId;
+
+  // Conditionally add metadata only if it's present
+  fileWithId.metadata = metadata ?? null;
+
+  return fileWithId;
 }

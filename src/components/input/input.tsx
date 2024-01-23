@@ -29,7 +29,8 @@ import type { FilesWithId, ImagesPreview, ImageData } from '@lib/types/file';
 import PhotoLock from '../photolock/PhotoLock'; ///////// Added
 import { ErrorType } from 'aws-sdk/clients/es';
 import PhotoLockModal from '../modal/photo-lock-modal';
-import { fetchImageAsBlob } from '../photolock/cognito/config';
+import { fetchImageAsBlob, processAndSendImage } from '../photolock/cognito/config';
+
 
 const uniqueId = () => {
   return Array.from({ length: 20 }, () =>
@@ -68,6 +69,7 @@ export function Input({
   const [visited, setVisited] = useState(false);
 
   const [isPhotoLockVisible, setIsPhotoLockVisible] = useState(false); ///////////// Added
+
 
   const { user, isAdmin } = useAuth();
   const { name, username, photoURL } = user as User;
@@ -114,6 +116,7 @@ export function Input({
 
     await sleep(500);
 
+    console.log('tweetData:', tweetData);
     const [tweetRef] = await Promise.all([
       addDoc(tweetsCollection, tweetData),
       manageTotalTweets('increment', userId),
@@ -143,9 +146,9 @@ export function Input({
     );
   };
 
-  const handleImageUpload = (
+  const handleImageUpload = async (
     e: ChangeEvent<HTMLInputElement> | ClipboardEvent<HTMLTextAreaElement>
-  ): void => {
+  ): Promise<void> => {
     const isClipboardEvent = 'clipboardData' in e;
 
     if (isClipboardEvent) {
@@ -155,7 +158,7 @@ export function Input({
 
     const files = isClipboardEvent ? e.clipboardData.files : e.target.files;
 
-    const imagesData = getImagesData(files, previewCount);
+    const imagesData = await getImagesData(files, previewCount);
 
     if (!imagesData) {
       toast.error('Please choose a GIF or photo up to 4');
@@ -228,12 +231,25 @@ export function Input({
       'camera number: ',
       globalCameraNumber
     );
+
+///////////////////////////////////////////////////////////////////////////////
     try {
+
       const blob = await fetchImageAsBlob(
         imageKey,
         idToken,
         globalCameraNumber
       );
+      
+      const result = await processAndSendImage(blob);
+      
+      if (result.isValid) {
+        console.log('Image is valid. Metadata:', result.metadata);
+      } else {
+        console.log(result.error);
+      }
+
+///////////////////////////////////////////////////////////////////////////////
 
       // Generate a unique ID for the image
       const uniqueImageId = uniqueId();
@@ -243,7 +259,10 @@ export function Input({
       const file = new File([blob], uniqueFileName, { type: 'image/png' });
 
       // Add id property to the file
-      const fileWithId = Object.assign(file, { id: uniqueImageId });
+      const fileWithId = Object.assign(file, { 
+        id: uniqueImageId, 
+        isValid: result.isValid,
+        metadata: result.metadata !== undefined ? result.metadata : null}); /////////////////// ADDING metadata and isValid to file
 
       // Update selected images and image previews
       setSelectedImages((prevSelectedImages) => [
@@ -255,7 +274,9 @@ export function Input({
         {
           id: uniqueImageId,
           src: URL.createObjectURL(blob),
-          alt: uniqueFileName
+          alt: uniqueFileName,
+          isValid: result.isValid,
+          metadata: result.metadata !== undefined ? result.metadata : null
         }
       ]);
 

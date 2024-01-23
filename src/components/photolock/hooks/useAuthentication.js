@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import {
-  CognitoUserPool,
-  AuthenticationDetails,
-  CognitoUser
-} from 'amazon-cognito-identity-js';
+import { CognitoUserPool, AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js';
 import { poolData, getCognitoIdentityCredentials } from '../cognito/config';
 
 const useAuthentication = () => {
@@ -11,28 +7,44 @@ const useAuthentication = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const login = async ({ username, password, idToken, cameraNumber }) => {
-    console.log('useAuthentication hook called');
+  const login = async ({ username, password }) => {
+    if (isLoggedIn) {
+      console.log('Already logged in');
+      return;
+    }
 
+    console.log('useAuthentication hook called');
     try {
       const userPool = new CognitoUserPool(poolData);
       const authenticationData = { Username: username, Password: password };
-      const authenticationDetails = new AuthenticationDetails(
-        authenticationData
-      );
+      const authenticationDetails = new AuthenticationDetails(authenticationData);
       const userData = { Username: username, Pool: userPool };
       const cognitoUser = new CognitoUser(userData);
 
       cognitoUser.authenticateUser(authenticationDetails, {
         onSuccess: function (result) {
+          const idToken = result.getIdToken().getJwtToken();
           getCognitoIdentityCredentials(idToken);
           setIsLoggedIn(true);
-          console.log('isLoggedIn: ', isLoggedIn);
-          console.log('Cameranumber in login: ', cameraNumber);
-          setUserDetails({ username, idToken, cameraNumber }); // You can add more user details here
+
+          cognitoUser.getUserAttributes((err, attributes) => {
+            if (err) {
+              console.error('Error fetching user attributes:', err);
+              return;
+            }
+
+            const cameraNumberAttribute = attributes.find(
+              (attr) => attr.getName() === 'custom:camera_number'
+            );
+
+            const cameraNumber = cameraNumberAttribute
+              ? cameraNumberAttribute.getValue()
+              : null;
+
+            setUserDetails({ username, idToken, cameraNumber });
+          });
         },
         onFailure: function (err) {
-          console.log('Wrong in useAuthntication: ', err.message);
           setErrorMessage(err.message || 'Login failed');
         }
       });
@@ -43,8 +55,10 @@ const useAuthentication = () => {
   };
 
   const logout = () => {
-    if (userPool) {
-      userPool.getCurrentUser().signOut();
+    const userPool = new CognitoUserPool(poolData);
+    const currentUser = userPool.getCurrentUser();
+    if (currentUser) {
+      currentUser.signOut();
     }
     setIsLoggedIn(false);
     setUserDetails(null);

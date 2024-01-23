@@ -6,6 +6,8 @@ import type {
 export type ImageData = {
   src: string;
   alt: string;
+  isValid?: boolean;
+  metadata?: any
 };
 
 export type ImagesPreview = (ImageData & {

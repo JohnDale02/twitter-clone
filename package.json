@@ -20,6 +20,7 @@
     "amazon-cognito-identity-js": "^6.3.7",
     "aws-sdk": "^2.1536.0",
     "clsx": "^1.2.1",
+    "crypto": "^1.0.1",
     "firebase": "^9.23.0",
     "framer-motion": "^7.2.1",
     "next": "^12.3.0",

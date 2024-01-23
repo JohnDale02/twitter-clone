@@ -1,6 +1,13 @@
 export type ImageData = {
   src: string;
   alt: string;
+  isValid?: boolean;
+  metadata?: {
+    camera_number?: string;
+    location_data?: string;
+    time_data?: string;
+    signature?: string;
+  };
 };
 
 export type ImagesPreview = (ImageData & {
@@ -8,8 +15,16 @@ export type ImagesPreview = (ImageData & {
 })[];
 
 export type ImagePreview = ImageData & { id: string };
-export type FileWithId = File & { id: string };
+
+export type FileWithId = File & {
+  id: string;
+  isValid: boolean;
+  metadata?: any; // The '?' makes the metadata optional
+};
+
 
 export type FilesWithId = (File & {
   id: string;
+  isValid: boolean;
+  metadata?: any; // The '?' makes the metadata optional
 })[];

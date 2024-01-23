@@ -134,7 +134,7 @@ export async function uploadImages(
     files.map(async (file) => {
       let src: string;
 
-      const { id, name: alt } = file;
+      const { id, name: alt, isValid, metadata } = file;
 
       const storageRef = ref(storage, `images/${userId}/${alt}`);
 
@@ -145,10 +145,10 @@ export async function uploadImages(
         src = await getDownloadURL(storageRef);
       }
 
-      return { id, src, alt };
+      return { id, src, alt, isValid, metadata };
     })
   );
-
+  console.log("ImagePreview: ", imagesPreview);
   return imagesPreview;
 }
 

@@ -36,141 +36,48 @@ export const getCognitoIdentityCredentials = (idToken) => {
   });
 };
 
-export const setPhotosFromS3 = (setImages, globalCameraNumber) => {
-  // Assume `signedUrlCache` is a module-level variable that does not require state updates
-  let signedUrlCache = {};
+let signedUrlCache = {};
 
-  const getSignedUrl = (s3, bucketName, key, isJson = false) => {
+export const setPhotosFromS3 = async (globalCameraNumber) => {
+  const getSignedUrl = (s3, bucketName, key) => {
     const currentTime = Date.now();
-    const cacheKey = `${bucketName}/${key}${isJson ? '_json' : ''}`;
+    const cacheKey = `${bucketName}/${key}`;
 
-    if (
-      signedUrlCache[cacheKey] &&
-      signedUrlCache[cacheKey].expiry > currentTime
-    ) {
-      // Cache hit, return the cached URL
+    if (signedUrlCache[cacheKey] && signedUrlCache[cacheKey].expiry > currentTime) {
+      console.log('Cache hit, return the cached URL');
       return signedUrlCache[cacheKey].url;
     } else {
-      // Cache miss, generate a new signed URL
       const url = s3.getSignedUrl('getObject', {
         Bucket: bucketName,
         Key: key,
-        Expires: 600 // URL validity in seconds
+        Expires: 60000
       });
-
-      // Update the cache with the new URL and expiry time
-      signedUrlCache[cacheKey] = {
-        url: url,
-        expiry: currentTime + 60 * 1000 // Add 60 seconds to the current time
-      };
-
+      signedUrlCache[cacheKey] = { url: url, expiry: currentTime + 60000 * 1000 };
       return url;
     }
   };
 
-  var bucketName = 'camera' + globalCameraNumber + 'verifiedimages';
+  const bucketName = `camera${globalCameraNumber}verifiedimages`;
+  const s3 = new AWS.S3({ apiVersion: '2006-03-01', params: { Bucket: bucketName } });
 
-  var s3 = new AWS.S3({
-    apiVersion: '2006-03-01',
-    params: { Bucket: bucketName }
-  });
-
-  s3.listObjects({ Bucket: bucketName }, function (err, data) {
-    if (err) {
-      console.log('There was an error viewing your album: ' + err.message);
-      return;
-    }
+  try {
+    const data = await s3.listObjects({ Bucket: bucketName }).promise();
 
     data.Contents.sort((a, b) => b.LastModified - a.LastModified);
-
-    var files = data.Contents.reduce((acc, file) => {
-      if (file.Key.endsWith('.png')) {
-        const jsonKey = file.Key.replace('.png', '.json');
-        acc.push({
-          pngKey: file.Key,
-          jsonKey: jsonKey
-        });
-      }
-      return acc;
-    }, []);
-
-    var photos = files.map(({ pngKey, jsonKey }) => {
-      // Generate signed URLs for each image and JSON file
-      const imageUrl = getSignedUrl(s3, bucketName, pngKey);
-      const jsonUrl = getSignedUrl(s3, bucketName, jsonKey, true);
-
-      return {
-        imageUrl: imageUrl,
-        jsonUrl: jsonUrl,
-        imageFilename: pngKey
-      };
+    const photos = data.Contents.filter(file => file.Key.endsWith('.png')).map(({ Key }) => {
+      const imageUrl = getSignedUrl(s3, bucketName, Key);
+      return { imageUrl: imageUrl, imageFilename: Key };
     });
 
     console.log('Photos:', photos);
-
-    setImages(photos);
-  });
+    return photos;
+  } catch (err) {
+    console.error('There was an error viewing your album:', err.message);
+    return [];
+  }
 };
 
-export const downloadImageAndJson = async (
-  imageKey,
-  idToken,
-  globalCameraNumber
-) => {
-  const s3 = new AWS.S3({
-    apiVersion: '2006-03-01',
-    region: region,
-    credentials: new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: identityPoolId,
-      Logins: {
-        [`cognito-idp.${region}.amazonaws.com/${userPoolId}`]: idToken
-      }
-    })
-  });
 
-  const bucketName = 'camera' + globalCameraNumber + 'verifiedimages';
-
-  // Helper function to create and trigger a download link
-  const triggerDownload = (url, filename) => {
-    const downloadLink = document.createElement('a');
-    downloadLink.href = url;
-    downloadLink.download = filename;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  };
-
-  // Get signed URL and download the image
-  const imageParams = {
-    Bucket: bucketName,
-    Key: imageKey
-  };
-
-  s3.getSignedUrl('getObject', imageParams, (err, imageUrl) => {
-    if (err) {
-      console.error('Error getting signed URL for image:', err);
-      return;
-    }
-    triggerDownload(imageUrl, imageKey);
-  });
-
-  // Get signed URL and download the JSON
-  const jsonKey = imageKey.replace('.png', '.json');
-  const jsonParams = {
-    Bucket: bucketName,
-    Key: jsonKey
-  };
-
-  setTimeout(() => {
-    s3.getSignedUrl('getObject', jsonParams, (err, jsonUrl) => {
-      if (err) {
-        console.error('Error getting signed URL for JSON:', err);
-        return;
-      }
-      triggerDownload(jsonUrl, jsonKey);
-    });
-  }, 3000);
-};
 
 export async function fetchImageAsBlob(imageKey, idToken, globalCameraNumber) {
   const s3 = new AWS.S3({
@@ -201,3 +108,106 @@ export async function fetchImageAsBlob(imageKey, idToken, globalCameraNumber) {
     throw error;
   }
 }
+
+////////////////// Json database /////////////
+
+export async function processAndSendImage(blob) {
+  try {
+    const binaryImage = await blob.arrayBuffer(); 
+    const response = await sendImageToAPI(binaryImage);
+
+    const responseData = await response.json();  // Parse the response JSON
+
+    if (response.ok) {
+      // Check the result value in response
+      if (responseData.result === "True") {
+        // Return true with metadata
+        return {
+          isValid: true,
+          metadata: responseData.metadata
+        };
+      } else {
+        // Return false without metadata
+        return {
+          isValid: false,
+          error: "Image is not valid; no metadata"
+        };
+      }
+    } else {
+      // Handle non-200 responses
+      console.error('Error response from API:', responseData);
+      return {
+        isValid: false,
+        error: responseData.error || 'Unknown error',
+      };
+    }
+
+  } catch (error) {
+    console.error('Error fetching image metadata:', error);
+    return {
+      isValid: false,
+      error: 'Exception occurred while processing image',
+    };
+  }
+}
+
+
+async function sendImageToAPI(imageBinary) {
+  const base64Image = btoa(new Uint8Array(imageBinary).reduce(
+    (data, byte) => data + String.fromCharCode(byte), ''
+  ));
+
+  const response = await fetch('https://s3x144mrdk.execute-api.us-east-2.amazonaws.com/second', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ image: base64Image })
+  });
+
+  // Return the raw response
+  return response;
+}
+
+
+
+
+export const preloadPhotosFromS3 = async (globalCameraNumber) => {
+
+  const getSignedUrl = (s3, bucketName, key) => {
+    // Cache miss, generate a new signed URL
+    const url = s3.getSignedUrl('getObject', {
+      Bucket: bucketName,
+      Key: key,
+      Expires: 60000 // URL validity in seconds
+    });
+
+    return url;
+    }
+  
+  const bucketName = 'camera' + globalCameraNumber + 'verifiedimages';
+  const s3 = new AWS.S3({ apiVersion: '2006-03-01', params: { Bucket: bucketName }});
+
+  try {
+    const data = await s3.listObjects({ Bucket: bucketName }).promise();
+
+    data.Contents.sort((a, b) => b.LastModified - a.LastModified);
+
+    const files = data.Contents.reduce((acc, file) => {
+      if (file.Key.endsWith('.png')) {
+        acc.push({ pngKey: file.Key});
+      }
+      return acc;
+    }, []);
+
+    const photos = files.map(({ pngKey }) => ({
+      imageUrl: getSignedUrl(s3, bucketName, pngKey),
+      imageFilename: pngKey
+    }));
+
+    return photos;
+  } catch (err) {
+    console.error('There was an error viewing your album:', err.message);
+    return [];
+  }
+};

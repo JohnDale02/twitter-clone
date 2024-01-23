@@ -12,6 +12,7 @@ import type { VariantLabels } from 'framer-motion';
 import type { ImageData } from '@lib/types/file';
 import type { IconName } from '@components/ui/hero-icon';
 
+
 type ImageModalProps = {
   tweet?: boolean;
   imageData: ImageData;
@@ -36,18 +37,31 @@ export function ImageModal({
 }: ImageModalProps): JSX.Element {
   const [indexes, setIndexes] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMetadata, setShowMetadata] = useState(false); ///////// ADDED ////////////////////
 
-  const { src, alt } = imageData;
+  ////////////////////////////////////////////////////////////
+
+  const handleMetadataClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation(); 
+    if (isValid) {
+      setShowMetadata(!showMetadata);
+    }
+  };
+
+  const handleImageClick = (event: React.MouseEvent<HTMLDivElement>) => {   // for allowing metadata to be opened and closed by clicking on the image
+    if (showMetadata) {
+      event.stopPropagation(); // Prevent the event from reaching the outer click handler
+      setShowMetadata(false);
+    }
+    // If there's additional logic for when the image is clicked, it can go here
+  };
+  
+
+  ///////////////////////////////////////////////////////////
+
+  const { src, alt, isValid } = imageData;
 
   const requireArrows = handleNextIndex && previewCount > 1;
-
-  /////////////// Added function below ///////////
-  const isVerifiedByPhotoLock = (imageData: ImageData) => {
-    // Implement your logic to determine if the image is verified
-    // For example, you could check a property in the imageData
-    // return imageData.isVerified;
-    return true; // This is just for demonstration purposes
-  };
 
   useEffect(() => {
     if (
@@ -120,10 +134,33 @@ export function ImageModal({
                 onClick={preventBubbling()}
               />
               {/* Add the verified badge here */}
-              {isVerifiedByPhotoLock(imageData) && (
-                <div className='trim-alt accent-tab absolute bottom-0 left-0 mx-2 mb-2 translate-y-4 rounded-md bg-main-background/40 px-2 py-1 text-sm text-light-primary/80 opacity-0 transition hover:bg-main-accent hover:text-white focus-visible:translate-y-0 focus-visible:bg-main-accent focus-visible:text-white focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 dark:text-dark-primary/80'>
+              {isValid && (
+                <>
+                <div
+                  className='trim-alt accent-tab absolute bottom-0 left-0 mx-2 mb-2 translate-y-4 rounded-md bg-main-background/40 px-2 py-1 text-sm text-light-primary/80 opacity-0 transition hover:bg-main-accent hover:text-white focus-visible:translate-y-0 focus-visible:bg-main-accent focus-visible:text-white focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 dark:text-dark-primary/80'
+                  onClick={handleMetadataClick}
+                  >
                   Verified by PhotoLock
                 </div>
+                {showMetadata && imageData.metadata && (
+                  <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg p-4'
+                  onClick={handleMetadataClick}
+                  >
+                    <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
+                      <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
+                      <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
+                      <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                      {/* Signature is intentionally omitted */}
+                    </div>
+                  </div>
+                )}
+                <img 
+                  src='/assets/check.png'
+                  alt="Verified" 
+                  className='absolute top-0 right-0 w-[25%] opacity-0 transition hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100' 
+                  onClick={handleImageClick}
+                />
+                </>
               )}
               <a
                 className='trim-alt accent-tab absolute bottom-0 right-0 mx-2 mb-2 translate-y-4

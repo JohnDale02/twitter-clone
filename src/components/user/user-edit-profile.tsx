@@ -128,8 +128,8 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
 
   const editImage =
     (type: 'cover' | 'profile') =>
-    ({ target: { files } }: ChangeEvent<HTMLInputElement>): void => {
-      const imagesData = getImagesData(files);
+    async ({ target: { files } }: ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const imagesData = await getImagesData(files);
 
       if (!imagesData) {
         toast.error('Please choose a valid GIF or Photo');
