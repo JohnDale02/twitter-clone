@@ -12,3 +12,4 @@ export function AppHead(): JSX.Element {
     </Head>
   );
 }
+

@@ -74,7 +74,7 @@ export async function getImagesData(
     const randomId = getRandomId();
     return {
       id: randomId,
-      name: name === 'image.png' ? `${randomId}.png` : null
+      name: `${randomId}.png`
     };
   });
 

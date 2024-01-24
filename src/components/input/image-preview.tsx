@@ -127,21 +127,14 @@ export function ImagePreview({
             layout={!isTweet ? true : false}
             key={id}
           >
-            <NextImage
-              className='relative h-full w-full cursor-pointer transition 
-                         hover:brightness-75 hover:duration-200'
-              imgClassName={cn(
-                isTweet
-                  ? postImageBorderRadius[previewCount][index]
-                  : 'rounded-2xl'
-              )}
-              previewCount={previewCount}
-              layout='fill'
-              objectFit='cover'
-              src={src}
-              alt={alt}
-              useSkeleton={isTweet}
-            />
+            <div className="relative w-full h-full overflow-hidden rounded-lg shadow-md transition-transform hover:scale-105">
+              <NextImage
+                layout='fill'
+                objectFit='cover' // This should be the correct prop for the Next.js Image component
+                src={src}
+                alt={alt}
+              />
+            </div>
             {removeImage && (
               <Button
                 className='group absolute left-0 top-0 translate-x-1 translate-y-1
