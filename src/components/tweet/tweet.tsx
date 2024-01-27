@@ -65,6 +65,18 @@ export function Tweet(tweet: TweetProps): JSX.Element {
 
   const { id: parentId, username: parentUsername = username } = parent ?? {};
 
+  // Initialize the flags
+  let hasValidImages = false;
+  let allImagesValid = false;
+
+  // Only perform the check if images is not null
+  if (images) {
+    hasValidImages = images.some((img) => img.isValid);
+    allImagesValid = images.every((img) => img.isValid);
+  }
+
+
+
   const {
     id: profileId,
     name: profileName,
@@ -177,11 +189,30 @@ export function Tweet(tweet: TweetProps): JSX.Element {
               )}
               <div className='mt-1 flex flex-col gap-2'>
                 {images && (
-                  <ImagePreview
-                    tweet
-                    imagesPreview={images}
-                    previewCount={images.length}
-                  />
+                  <>
+                    <ImagePreview
+                      tweet
+                      imagesPreview={images}
+                      previewCount={images.length}
+                    />
+                    {/* Conditionally render the authenticity text below the images */}
+                    {hasValidImages && (
+                    <div className="flex items-center justify-center mt-0 px-2 py-0 text-white rounded">
+                      <span className="order-first">
+                        {images.length === 1 && hasValidImages
+                          ? "Image is Authentic"
+                          : allImagesValid
+                          ? "All Images are Authentic"
+                          : "Some Images are Authentic"}
+                      </span>
+                      <img 
+                        src='/assets/check.png'
+                        alt="Authentic" 
+                        className="ml-2 w-5 h-5" // Tailwind classes for margin-left and width/height
+                      />
+                    </div>
+                  )}
+                  </>
                 )}
                 {!modal && (
                   <TweetStats
