@@ -6,6 +6,9 @@ var clientId = 'h1sablrdqstkqt90lsfr4fnip';
 var region = 'us-east-2';
 var identityPoolId = 'us-east-2:27d074d6-1504-4bbf-8394-45f8a4595b87';
 
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
 export const poolData = {
   UserPoolId: userPoolId,
   ClientId: clientId
@@ -38,7 +41,7 @@ export const getCognitoIdentityCredentials = (idToken) => {
 
 let signedUrlCache = {};
 
-export const setPhotosFromS3 = async (globalCameraNumber) => {
+export const setMediaFromS3 = async (globalCameraNumber) => {
   const getSignedUrl = (s3, bucketName, key) => {
     const currentTime = Date.now();
     const cacheKey = `${bucketName}/${key}`;
@@ -64,13 +67,14 @@ export const setPhotosFromS3 = async (globalCameraNumber) => {
     const data = await s3.listObjects({ Bucket: bucketName }).promise();
 
     data.Contents.sort((a, b) => b.LastModified - a.LastModified);
-    const photos = data.Contents.filter(file => file.Key.endsWith('.png')).map(({ Key }) => {
-      const imageUrl = getSignedUrl(s3, bucketName, Key);
-      return { imageUrl: imageUrl, imageFilename: Key };
+
+    const mediaItems = data.Contents.filter(file => file.Key.endsWith('.png') || file.Key.endsWith('.mp4')).map(({ Key }) => {
+      const mediaUrl = getSignedUrl(s3, bucketName, Key);
+      return { mediaUrl: mediaUrl, mediaFilename: Key, isVideo: Key.endsWith('.mp4')};
     });
 
-    console.log('Photos:', photos);
-    return photos;
+    console.log('Media:', mediaItems);
+    return mediaItems;
   } catch (err) {
     console.error('There was an error viewing your album:', err.message);
     return [];
@@ -78,8 +82,7 @@ export const setPhotosFromS3 = async (globalCameraNumber) => {
 };
 
 
-
-export async function fetchImageAsBlob(imageKey, idToken, globalCameraNumber) {
+export async function fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber) {
   const s3 = new AWS.S3({
     apiVersion: '2006-03-01',
     region: region,
@@ -91,11 +94,14 @@ export async function fetchImageAsBlob(imageKey, idToken, globalCameraNumber) {
     })
   });
 
+  // ###############################################
+  // if it is a video we need to get the AVI blob here not the mp4 blob
+  // ###############################################
   const bucketName = 'camera' + globalCameraNumber + 'verifiedimages';
 
   const imageParams = {
     Bucket: bucketName,
-    Key: imageKey
+    Key: mediaKey
   };
 
   try {
@@ -111,10 +117,10 @@ export async function fetchImageAsBlob(imageKey, idToken, globalCameraNumber) {
 
 ////////////////// Json database /////////////
 
-export async function processAndSendImage(blob) {
+export async function processAndSendMedia(blob, type) {
   try {
-    const binaryImage = await blob.arrayBuffer(); 
-    const response = await sendImageToAPI(binaryImage);
+    const binaryMedia = await blob.arrayBuffer(); 
+    const response = await sendMediaToAPI(binaryMedia, type);
 
     const responseData = await response.json();  // Parse the response JSON
 
@@ -152,8 +158,8 @@ export async function processAndSendImage(blob) {
 }
 
 
-async function sendImageToAPI(imageBinary) {
-  const base64Image = btoa(new Uint8Array(imageBinary).reduce(
+async function sendMediaToAPI(mediaBinary, type) {
+  const base64Image = btoa(new Uint8Array(mediaBinary).reduce(
     (data, byte) => data + String.fromCharCode(byte), ''
   ));
 
@@ -162,7 +168,7 @@ async function sendImageToAPI(imageBinary) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ image: base64Image })
+    body: JSON.stringify({ image: base64Image, type: type})
   });
 
   // Return the raw response
@@ -170,44 +176,99 @@ async function sendImageToAPI(imageBinary) {
 }
 
 
+export async function getMediaBlobs(mediaKey, idToken, globalCameraNumber) {
+  let displayBlob, verifyBlob;
 
+  if (mediaKey.endsWith('.mp4')) {
+    displayBlob = await fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber);
+    const aviMediaKey = mediaKey.replace('.mp4', '.avi');
+    verifyBlob = await fetchMediaAsBlob(aviMediaKey, idToken, globalCameraNumber);
 
-export const preloadPhotosFromS3 = async (globalCameraNumber) => {
-
-  const getSignedUrl = (s3, bucketName, key) => {
-    // Cache miss, generate a new signed URL
-    const url = s3.getSignedUrl('getObject', {
-      Bucket: bucketName,
-      Key: key,
-      Expires: 60000 // URL validity in seconds
-    });
-
-    return url;
-    }
-  
-  const bucketName = 'camera' + globalCameraNumber + 'verifiedimages';
-  const s3 = new AWS.S3({ apiVersion: '2006-03-01', params: { Bucket: bucketName }});
-
-  try {
-    const data = await s3.listObjects({ Bucket: bucketName }).promise();
-
-    data.Contents.sort((a, b) => b.LastModified - a.LastModified);
-
-    const files = data.Contents.reduce((acc, file) => {
-      if (file.Key.endsWith('.png')) {
-        acc.push({ pngKey: file.Key});
-      }
-      return acc;
-    }, []);
-
-    const photos = files.map(({ pngKey }) => ({
-      imageUrl: getSignedUrl(s3, bucketName, pngKey),
-      imageFilename: pngKey
-    }));
-
-    return photos;
-  } catch (err) {
-    console.error('There was an error viewing your album:', err.message);
-    return [];
+  } else if (mediaKey.endsWith('.png')) {
+    // For both display and API (if needed), since it's the same for images
+    displayBlob = await fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber);
+    verifyBlob = displayBlob; // You can use the same blob for verification if needed
   }
-};
+
+  return { displayBlob, verifyBlob };
+}
+
+// Configure the AWS Region and Lambda function name
+AWS.config.update({
+  region: 'us-east-2',
+  accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+});
+
+var lambda = new AWS.Lambda();
+
+export async function uploadAndConvertFile(blob) {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async function() {
+          const arrayBuffer = reader.result;
+          const base64avi = arrayBufferToBase64(arrayBuffer);
+
+          // Correctly structure the Lambda payload
+          const lambdaPayload = {
+              body: JSON.stringify({ avi_data: base64avi }) // Ensure 'avi_data' matches the key expected by your Lambda function
+          };
+
+          // Prepare the parameters for invoking Lambda
+          const params = {
+              FunctionName: 'AVIupload', // Replace with your Lambda function's ARN
+              InvocationType: 'RequestResponse',
+              LogType: 'None',
+              Payload: JSON.stringify(lambdaPayload) // Payload is now a stringified version of lambdaPayload
+          };
+
+          // Invoke the Lambda function
+          lambda.invoke(params, function(err, data) {
+              if (err) {
+                  console.error('Error invoking Lambda:', err);
+                  reject(err);
+              } else {
+                  console.log('Lambda call succeeded:', data);
+                  const responsePayload = JSON.parse(data.Payload); // Parse the Lambda function's response payload
+                  if (responsePayload.statusCode === 200) {
+                      const responseBody = JSON.parse(responsePayload.body); // Parse the body within the Lambda response
+                      const mp4Base64 = responseBody.mp4_base64;
+
+                      // Convert base64 back to a blob
+                      const mp4Blob = base64ToBlob(mp4Base64, 'video/mp4');
+                      resolve(mp4Blob);
+                      console.log('MP4 Blob was resolved');
+                  } else {
+                      // Handle possible errors returned from the Lambda function
+                      const error = new Error(`Lambda function returned error: ${responsePayload.body}`);
+                      console.error(error);
+                      reject(error);
+                  }
+              }
+          });
+      };
+
+      reader.onerror = function(error) {
+          console.error('FileReader error:', error);
+          reject(error);
+      };
+
+      reader.readAsArrayBuffer(blob);
+  });
+}
+
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+function base64ToBlob(base64, mimeType) {
+  const byteCharacters = window.atob(base64);
+  const byteNumbers = new Array(byteCharacters.length).fill(null).map((_, i) => byteCharacters.charCodeAt(i));
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+}

@@ -1,25 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { setPhotosFromS3 } from '../cognito/config';
+import { setMediaFromS3 } from '../cognito/config';
 
-const useImageGallery = (cameraNumber) => {
+const useMediaGallery = (cameraNumber) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false); // Initialize loading state
   const lastFetchedCameraNumber = useRef(cameraNumber);
   const pollInterval = 3000; // Polling interval in milliseconds
-
-  const preloadImages = async (photos) => {
-    const preloadPromises = photos.map((photo) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.src = photo.imageUrl;
-        img.onload = resolve; // Resolve promise once image is loaded
-      });
-    });
-
-    // Wait for all images to be preloaded
-    await Promise.all(preloadPromises);
-    return photos;
-  };
 
   useEffect(() => {
     let intervalId;
@@ -28,9 +14,8 @@ const useImageGallery = (cameraNumber) => {
       if (cameraNumber && cameraNumber !== lastFetchedCameraNumber.current) {
         console.log('Fetching images from S3 due to camera number change');
         setLoading(true); // Start loading
-        const photos = await setPhotosFromS3(cameraNumber); // Fetch images
-        const preloadedPhotos = await preloadImages(photos); // Preload images
-        setImages(preloadedPhotos);
+        const media = await setMediaFromS3(cameraNumber); // Fetch images
+        setImages(media);
         lastFetchedCameraNumber.current = cameraNumber;
         setLoading(false); // Stop loading once images are preloaded
       }
@@ -55,4 +40,4 @@ const useImageGallery = (cameraNumber) => {
   return { images, loading }; // Return both images and loading state
 };
 
-export default useImageGallery;
+export default useMediaGallery;

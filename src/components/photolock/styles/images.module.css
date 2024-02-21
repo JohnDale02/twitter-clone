@@ -29,11 +29,38 @@
   transition: transform 0.15s ease-in-out;
 }
 
-.imgGallery img:hover {
+.imgGallery video {
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out;
+  position: relative; /* Set position context for pseudo-element */
+}
+
+.imgGallery img:hover,
+.imgGallery video:hover {
   transform: scale(1.05);
   border-radius: 5px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
+
+.playButton {
+  position: relative;
+  width: 100%; /* Ensure it covers the video */
+}
+
+.playButton::after {
+  content: ''; /* Necessary for pseudo-elements */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 50%; /* Size of the play icon */
+  width: 50%; /* Size of the play icon */
+  background: url('../../../../public/assets/play.png') no-repeat center center / contain; /* Update the path to your play icon */
+  pointer-events: none; /* Clicks should go through to the video element */
+  z-index: 2; /* Ensure the icon is above the video */
+}
+
 
 .fullImg {
   display: flex;
@@ -279,7 +306,7 @@
     grid-gap: 5px;
   }
 
-  .imgGallery img:hover {
+  .imgGallery video:hover img:hover {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
 

@@ -60,6 +60,7 @@ export function ImageModal({
   ///////////////////////////////////////////////////////////
 
   const { src, alt, isValid } = imageData;
+  const isVideo = alt?.endsWith('.mp4') 
 
   const requireArrows = handleNextIndex && previewCount > 1;
 
@@ -72,10 +73,13 @@ export function ImageModal({
       setLoading(true);
       setIndexes([...indexes, selectedIndex]);
     }
+    const media = isVideo ? document.createElement('video') : new Image();
+    media.src = src;
 
-    const image = new Image();
-    image.src = src;
-    image.onload = (): void => setLoading(false);
+    const handleLoadingCompleted = (): void => setLoading(false);
+
+    if (isVideo) media.onloadeddata = handleLoadingCompleted;
+    else media.onload = handleLoadingCompleted;
   }, [...(tweet && previewCount > 1 ? [src] : [])]);
 
   useEffect(() => {
@@ -125,6 +129,63 @@ export function ImageModal({
           </motion.div>
         ) : (
           <motion.div className='relative mx-auto' {...modal} key={src}>
+            {isVideo ? (
+              <div className='group relative flex max-w-3xl'>
+                <video
+                  className={cn(
+                    'max-h-[75vh] rounded-md object-contain md:max-h-[80vh]',
+                    loading ? 'hidden' : 'block'
+                  )}
+                  src={src}
+                  autoPlay
+                  controls
+                  onClick={preventBubbling()}
+                >
+                  <source srcSet={src} type='video/*' />
+                </video>
+                  {isValid && (
+                  <>
+                  <div
+                    className='trim-alt accent-tab absolute bottom-14 left-0 mx-2 mb-2 translate-y-4 rounded-md bg-main-background/40 px-2 py-1 text-sm text-light-primary/80 opacity-0 transition hover:bg-main-accent hover:text-white focus-visible:translate-y-0 focus-visible:bg-main-accent focus-visible:text-white focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 dark:text-dark-primary/80'
+                    onClick={handleMetadataClick}
+                    >
+                    Verified by PhotoLock
+                  </div>
+                  {showMetadata && imageData.metadata && (
+                    <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg p-4'
+                    onClick={handleMetadataClick}
+                    >
+                      <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
+                        <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
+                        <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
+                        <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                        {/* Signature is intentionally omitted */}
+                      </div>
+                    </div>
+                  )}
+                  <img 
+                    src='/assets/check.png'
+                    alt="Verified" 
+                    className='absolute top-0 right-0 w-[25%] opacity-0 transition hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100' 
+                    onClick={handleImageClick}
+                  />
+                  </>
+                )}
+                <a
+                  className='trim-alt accent-tab absolute bottom-14 right-0 mx-2 mb-2 translate-y-4
+                            rounded-md bg-main-background/40 px-2 py-1 text-sm text-light-primary/80 opacity-0
+                            transition hover:bg-main-accent hover:text-white focus-visible:translate-y-0
+                            focus-visible:bg-main-accent focus-visible:text-white focus-visible:opacity-100
+                            group-hover:translate-y-0 group-hover:opacity-100 dark:text-dark-primary/80'
+                  href={src}
+                  target='_blank'
+                  rel='noreferrer'
+                  onClick={preventBubbling(null, true)}
+                >
+                  {alt}
+                </a>
+              </div>
+            ) : (
             <picture className='group relative flex max-w-3xl'>
               <source srcSet={src} type='image/*' />
               <img
@@ -176,8 +237,9 @@ export function ImageModal({
                 {alt}
               </a>
             </picture>
+            )}
             <a
-              className='custom-underline absolute -bottom-7 left-0 font-medium text-light-primary/80
+              className='custom-underline absolute left-0 -bottom-7 font-medium text-light-primary/80
                          decoration-transparent underline-offset-2 transition hover:text-light-primary hover:underline
                          hover:decoration-light-primary focus-visible:text-light-primary dark:text-dark-primary/80 
                          dark:hover:text-dark-primary dark:hover:decoration-dark-primary dark:focus-visible:text-dark-primary'

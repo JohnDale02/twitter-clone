@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import ImageGallery from './components/ImageGallery';
+import MediaGallery from './components/MediaGallery';
 import Slider from './components/Slider';
 import useAuthentication from './hooks/useAuthentication';
-import useImageGallery from './hooks/useImageGallery';
+import useMediaGallery from './hooks/useMediaGallery';
 import styles from './styles/login.module.css';
 import LoadingIcon from './components/LoadingIcon'; // Make sure you have this component
 
-const PhotoLock = ({ photoLockCredentials, handleAuthImageUpload }) => {
+const PhotoLock = ({ photoLockCredentials, handleAuthMediaUpload }) => {
   const { isLoggedIn, userDetails, login, errorMessage } = useAuthentication();
   const [loginError, setLoginError] = useState(errorMessage);
   const [numColumns, setNumColumns] = useState(4);
-  const { images, loading } = useImageGallery(userDetails?.cameraNumber);
+  const { images, loading } = useMediaGallery(userDetails?.cameraNumber);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
 
 
@@ -21,12 +21,12 @@ const PhotoLock = ({ photoLockCredentials, handleAuthImageUpload }) => {
     }
   }, [photoLockCredentials, isLoggedIn, login]);
 
-  const handleImageSelect = async (imageKey) => {
+  const handleMediaSelect = async (mediaKey) => {
     if (userDetails) {
       setIsLoadingImage(true);
       try{
-        await handleAuthImageUpload(
-          imageKey,
+        await handleAuthMediaUpload(
+          mediaKey,
           userDetails.idToken,
           userDetails.cameraNumber
         );
@@ -46,9 +46,9 @@ const PhotoLock = ({ photoLockCredentials, handleAuthImageUpload }) => {
         ) : (
           <>
             <Slider numColumns={numColumns} setNumColumns={setNumColumns} />
-            <ImageGallery
-              images={images}
-              handleImageSelect={handleImageSelect}
+            <MediaGallery
+              media={images}
+              handleMediaSelect={handleMediaSelect}
               numColumns={numColumns}
               loading={isLoadingImage}
             />

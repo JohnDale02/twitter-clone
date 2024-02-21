@@ -200,10 +200,10 @@ export function Tweet(tweet: TweetProps): JSX.Element {
                     <div className="flex items-center justify-center mt-0 px-2 py-0 text-white rounded">
                       <span className="order-first">
                         {images.length === 1 && hasValidImages
-                          ? "Image is Authentic"
+                          ? "Media is Authentic"
                           : allImagesValid
-                          ? "All Images are Authentic"
-                          : "Some Images are Authentic"}
+                          ? "All Media is Authentic"
+                          : "Some Media is Authentic"}
                       </span>
                       <img 
                         src='/assets/check.png'

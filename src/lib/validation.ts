@@ -1,6 +1,6 @@
 import { getRandomId } from './random';
 import type { FilesWithId, FileWithId, ImagesPreview } from './types/file';
-import { processAndSendImage } from '../components/photolock/cognito/config';
+import { processAndSendMedia, uploadAndConvertFile } from '../components/photolock/cognito/config';
 
 const IMAGE_EXTENSIONS = [
   'apng',
@@ -21,6 +21,16 @@ const IMAGE_EXTENSIONS = [
 
 type ImageExtensions = (typeof IMAGE_EXTENSIONS)[number];
 
+const MEDIA_EXTENSIONS = [
+  ...IMAGE_EXTENSIONS,
+  'mp4',
+  'mov',
+  'webm',
+  'avi',
+] as const;
+
+type MediaExtensions = (typeof MEDIA_EXTENSIONS)[number];
+
 function isValidImageExtension(
   extension: string
 ): extension is ImageExtensions {
@@ -29,8 +39,28 @@ function isValidImageExtension(
   );
 }
 
+function determineExtension(fileName: string): 'png' | 'mp4' {
+  const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
+  
+  // Check if the extension is in the list of video extensions to assign 'mp4', otherwise default to 'png'
+  const videoExtensions = ['mp4', 'mov', 'webm', 'avi'];
+  return videoExtensions.includes(extension) ? 'mp4' : 'png';
+}
+
+function isValidMediaExtension(
+  extension: string
+): extension is MediaExtensions {
+  return MEDIA_EXTENSIONS.includes(
+    extension.split('.').pop()?.toLowerCase() as MediaExtensions
+  );
+}
+
 export function isValidImage(name: string, bytes: number): boolean {
   return isValidImageExtension(name) && bytes < 20 * Math.pow(1024, 2);
+}
+
+export function isValidMedia(name: string, size: number): boolean {
+  return isValidMediaExtension(name) && size < 50 * Math.pow(1024, 2);
 }
 
 export function isValidUsername(
@@ -62,56 +92,86 @@ export async function getImagesData(
 
   const singleEditingMode = currentFiles === undefined;
 
-  const rawImages =
+  const rawMedia =
     singleEditingMode ||
     !(currentFiles === 4 || files.length > 4 - currentFiles)
-      ? Array.from(files).filter(({ name, size }) => isValidImage(name, size))
+      ? Array.from(files).filter(({ name, size }) => isValidMedia(name, size))
       : null;
 
-  if (!rawImages || !rawImages.length) return null;
+  if (!rawMedia || !rawMedia.length) return null;
 
-  const imagesId = rawImages.map(({ name }) => {
+  const mediaId = rawMedia.map(({ name }) => {
     const randomId = getRandomId();
+    const extension = determineExtension(name);
     return {
       id: randomId,
-      name: `${randomId}.png`
+      name: `${randomId}.${extension}`
     };
   });
 
   ////////////////////////////////// ADDED //////////////////////////////////
-  const validationPromises = rawImages.map(async (image) => {
-    // As File objects are already Blobs, you can directly pass them
-    const result = await processAndSendImage(image);  // result of the API call to verify the image
+  const validationPromises = rawMedia.map(async (media, index) => {
+    let type: string;
+    console.log("Media name: ", media.name);
 
-    if (result.isValid) {
-      console.log('Image is valid. Metadata:', result.metadata);
+    if (media.name.endsWith('.avi')) {  // if someone upload an AVI try to verify it, and then get MP4
+      type = 'video/avi';
+
+    } else if (media.name.endsWith('.png')) {
+      type= 'image/png';
+    
     } else {
-      console.log(result.error);
+      type = 'image/png'; // If the file is not AVI or PNG, the type will be 'unknown'
+      console.log("not AVI or PNG will not be able to confirm validity");
     }
+    // As File objects are already Blobs, you can directly pass them
 
-    return result; // Assuming processAndSendImage returns an object with an isValid property
+    //##########################################################
+    // ------------------ UPLOAD FROM FILESYSTEM ----------------
+    //##########################################################
+    console.log("Processing Upload from filesystem");
+    const result = await processAndSendMedia(media, type);  // result of the API call to verify the image
+    console.log("Is this a valid media from our first API call? : ", result.isValid);
+    let isValid = result.isValid;
+
+    if (type === 'video/avi' && isValid) {
+      try {
+          const convertedBlob = await uploadAndConvertFile(media); // This returns the converted MP4 blob
+          // Use the converted MP4 blob directly
+          media = convertedBlob; // Replace the original AVI blob with the converted MP4 blob
+          // Update the name in the mediaId array to reflect the new MP4 file
+          mediaId[index].name = `${mediaId[index].id}.mp4`;
+      } catch (error) {
+          console.error("Conversion failed:", error);
+          isValid = false; // Consider conversion failure as invalid
+      }
+  }
+  
+  return {
+      media,
+      isValid,
+      metadata: result.metadata ?? null,
+  };
   });
 
+   
   const validationResults = await Promise.all(validationPromises);
 
-  //////////////////////////////////////////////////////////////////////////
-  const imagesPreviewData = rawImages.map((image, index) => ({
-    id: imagesId[index].id,
-    src: URL.createObjectURL(image),
-    alt: imagesId[index].name ?? image.name,
-    isValid: validationResults[index].isValid,  ////////////// added 
-    metadata: validationResults[index].metadata ?? null //////////// added 
-
+  const imagesPreviewData = validationResults.map(({ media, isValid, metadata }, index) => ({
+    id: mediaId[index].id,
+    src: URL.createObjectURL(media),
+    alt: mediaId[index].name,
+    isValid: isValid,
+    metadata: metadata,
   }));
 
-  const selectedImagesData = rawImages.map((image, index) => {
-    const validationResult = validationResults[index];
+  const selectedImagesData = validationResults.map(({ media, isValid, metadata }, index) => {
     return renameFile(
-      image, 
-      imagesId[index].id, 
-      imagesId[index].name, 
-      validationResult.isValid, 
-      validationResult.metadata
+      media,
+      mediaId[index].id,
+      mediaId[index].name,
+      isValid,
+      metadata
     );
   });
 

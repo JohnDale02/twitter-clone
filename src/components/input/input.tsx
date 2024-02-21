@@ -29,7 +29,7 @@ import type { FilesWithId, ImagesPreview, ImageData } from '@lib/types/file';
 import PhotoLock from '../photolock/PhotoLock'; ///////// Added
 import { ErrorType } from 'aws-sdk/clients/es';
 import PhotoLockModal from '../modal/photo-lock-modal';
-import { fetchImageAsBlob, processAndSendImage } from '../photolock/cognito/config';
+import { getMediaBlobs, processAndSendMedia } from '../photolock/cognito/config';
 
 
 const uniqueId = () => {
@@ -220,28 +220,57 @@ export function Input({
     togglePhotoLockVisibility();
   };
 
-  const handleAuthImageUpload = async (
-    imageKey: string,
+  const handleAuthMediaUpload = async (
+    mediaKey: string,
     idToken: string,
     globalCameraNumber: number
   ) => {
     console.log(
       'Downloading Image for tweet: ImageKey: ',
-      imageKey,
+      mediaKey,
       'camera number: ',
       globalCameraNumber
     );
 
 ///////////////////////////////////////////////////////////////////////////////
     try {
-
-      const blob = await fetchImageAsBlob(
-        imageKey,
-        idToken,
-        globalCameraNumber
-      );
       
-      const result = await processAndSendImage(blob);
+      let fileName: string;
+      let fileType
+      // Generate a unique ID for the image
+      const uniqueImageId = uniqueId();
+
+      const { displayBlob, verifyBlob } = await getMediaBlobs(mediaKey, idToken, globalCameraNumber);
+
+      if (!displayBlob) {
+        console.error('Failed to fetch display blob');
+        // Handle the error case here (e.g., display a message to the user)
+        return;
+      }
+
+      let type; 
+
+      if (mediaKey.endsWith('.mp4')) {   // if the file is a video that they want to upload, 
+        console.log("Media ends with .mp4, we are using tyhpe video/avi for api call");
+        type = 'video/avi';
+
+        // If the mediaKey ends with .mp4, set fileName and fileType for a video file
+        fileName = `${uniqueImageId}.mp4`;
+        fileType = 'video/mp4';
+
+      } else {
+        console.log("Media ends with .png, we are using type image/png for api call");
+        type = 'image/png';
+
+        fileName = `${uniqueImageId}.png`;
+        fileType = 'image/png';
+      }
+      
+      //##########################################################
+      // ------------------- PHOTOLOCK DIRECT -----------------
+      //##########################################################
+      console.log("Photolock direct input: processing...")
+      const result = await processAndSendMedia(verifyBlob, type);
       
       if (result.isValid) {
         console.log('Image is valid. Metadata:', result.metadata);
@@ -251,12 +280,7 @@ export function Input({
 
 ///////////////////////////////////////////////////////////////////////////////
 
-      // Generate a unique ID for the image
-      const uniqueImageId = uniqueId();
-
-      // Rename the file with the unique ID
-      const uniqueFileName = `${uniqueImageId}.png`;
-      const file = new File([blob], uniqueFileName, { type: 'image/png' });
+      const file = new File([displayBlob], fileName, { type: fileType });
 
       // Add id property to the file
       const fileWithId = Object.assign(file, { 
@@ -273,8 +297,8 @@ export function Input({
         ...prevImagesPreview,
         {
           id: uniqueImageId,
-          src: URL.createObjectURL(blob),
-          alt: uniqueFileName,
+          src: URL.createObjectURL(displayBlob),
+          alt: fileName,
           isValid: result.isValid,
           metadata: result.metadata !== undefined ? result.metadata : null
         }
@@ -308,7 +332,7 @@ export function Input({
         >
           <PhotoLock
             photoLockCredentials={photoLockCredentials}
-            handleAuthImageUpload={handleAuthImageUpload}
+            handleAuthMediaUpload={handleAuthMediaUpload}
           />
         </PhotoLockModal>
       )}
