@@ -223,13 +223,13 @@ export function Input({
   const handleAuthMediaUpload = async (
     mediaKey: string,
     idToken: string,
-    globalCameraNumber: number
+    globalBucketName_fingerprint: string
   ) => {
     console.log(
       'Downloading Image for tweet: ImageKey: ',
       mediaKey,
-      'camera number: ',
-      globalCameraNumber
+      'fingerprint: ',
+      globalBucketName_fingerprint
     );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ export function Input({
       // Generate a unique ID for the image
       const uniqueImageId = uniqueId();
 
-      const { displayBlob, verifyBlob } = await getMediaBlobs(mediaKey, idToken, globalCameraNumber);
+      const { displayBlob, verifyBlob } = await getMediaBlobs(mediaKey, idToken, globalBucketName_fingerprint); 
 
       if (!displayBlob) {
         console.error('Failed to fetch display blob');

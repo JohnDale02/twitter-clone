@@ -156,9 +156,11 @@ export function ImageModal({
                     onClick={handleMetadataClick}
                     >
                       <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
+                        <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
                         <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
                         <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
                         <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                        <div className='text-lg font-semibold'>Signature: <span className='font-light'>{imageData.metadata.signature}</span></div>
                         {/* Signature is intentionally omitted */}
                       </div>
                     </div>
@@ -208,9 +210,11 @@ export function ImageModal({
                   onClick={handleMetadataClick}
                   >
                     <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
+                      <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
                       <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
                       <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
                       <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                      <div className='text-lg font-semibold'>Signature: <span className='font-light'>{imageData.metadata.signature}</span></div>
                       {/* Signature is intentionally omitted */}
                     </div>
                   </div>

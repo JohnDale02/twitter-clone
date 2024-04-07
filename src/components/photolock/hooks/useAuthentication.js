@@ -33,15 +33,16 @@ const useAuthentication = () => {
               return;
             }
 
-            const cameraNumberAttribute = attributes.find(
-              (attr) => attr.getName() === 'custom:camera_number'
+            const fingerprintAttribute = attributes.find(
+              (attr) => attr.getName() === 'custom:fingerprint'
             );
 
-            const cameraNumber = cameraNumberAttribute
-              ? cameraNumberAttribute.getValue()
+            const bucketName_fingerprint = fingerprintAttribute
+              ? fingerprintAttribute.getValue()
               : null;
-
-            setUserDetails({ username, idToken, cameraNumber });
+            
+            console.log('Fingerprint and bucketName:', bucketName_fingerprint);
+            setUserDetails({ username, idToken, bucketName_fingerprint });
           });
         },
         onFailure: function (err) {

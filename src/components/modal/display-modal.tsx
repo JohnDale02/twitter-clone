@@ -10,9 +10,10 @@ type DisplayModalProps = {
 };
 
 const themes: Readonly<[Theme, string][]> = [
+  ['dark', 'Lights out'],
   ['light', 'Default'],
   ['dim', 'Dim'],
-  ['dark', 'Lights out']
+
 ];
 
 const accentsColor: Readonly<Accent[]> = [

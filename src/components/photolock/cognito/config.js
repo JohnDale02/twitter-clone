@@ -1,10 +1,10 @@
 import AWS from 'aws-sdk';
 
 //=============== AWS IDs ===============
-var userPoolId = 'us-east-2_jgICLJECT';
-var clientId = 'h1sablrdqstkqt90lsfr4fnip';
+var userPoolId = 'us-east-2_0cV1pXRAu';
+var clientId = '1qvjvm0slqct6r8sibps8ogt47';
 var region = 'us-east-2';
-var identityPoolId = 'us-east-2:27d074d6-1504-4bbf-8394-45f8a4595b87';
+var identityPoolId = 'us-east-2:d1807790-6713-47b5-8e18-f45270fd9686';
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -41,7 +41,7 @@ export const getCognitoIdentityCredentials = (idToken) => {
 
 let signedUrlCache = {};
 
-export const setMediaFromS3 = async (globalCameraNumber) => {
+export const setMediaFromS3 = async (globalBucketName_fingerprint) => {
   const getSignedUrl = (s3, bucketName, key) => {
     const currentTime = Date.now();
     const cacheKey = `${bucketName}/${key}`;
@@ -60,7 +60,8 @@ export const setMediaFromS3 = async (globalCameraNumber) => {
     }
   };
 
-  const bucketName = `camera${globalCameraNumber}verifiedimages`;
+  console.log("Bucket name in setMedia from S3", globalBucketName_fingerprint);
+  const bucketName = globalBucketName_fingerprint;
   const s3 = new AWS.S3({ apiVersion: '2006-03-01', params: { Bucket: bucketName } });
 
   try {
@@ -82,7 +83,7 @@ export const setMediaFromS3 = async (globalCameraNumber) => {
 };
 
 
-export async function fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber) {
+export async function fetchMediaAsBlob(mediaKey, idToken, globalBucketName_fingerprint) {
   const s3 = new AWS.S3({
     apiVersion: '2006-03-01',
     region: region,
@@ -97,7 +98,7 @@ export async function fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber) {
   // ###############################################
   // if it is a video we need to get the AVI blob here not the mp4 blob
   // ###############################################
-  const bucketName = 'camera' + globalCameraNumber + 'verifiedimages';
+  const bucketName = globalBucketName_fingerprint;
 
   const imageParams = {
     Bucket: bucketName,
@@ -176,17 +177,17 @@ async function sendMediaToAPI(mediaBinary, type) {
 }
 
 
-export async function getMediaBlobs(mediaKey, idToken, globalCameraNumber) {
+export async function getMediaBlobs(mediaKey, idToken, globalBucketName_fingerprint) {
   let displayBlob, verifyBlob;
 
   if (mediaKey.endsWith('.mp4')) {
-    displayBlob = await fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber);
+    displayBlob = await fetchMediaAsBlob(mediaKey, idToken, globalBucketName_fingerprint);
     const aviMediaKey = mediaKey.replace('.mp4', '.avi');
-    verifyBlob = await fetchMediaAsBlob(aviMediaKey, idToken, globalCameraNumber);
+    verifyBlob = await fetchMediaAsBlob(aviMediaKey, idToken, globalBucketName_fingerprint);
 
   } else if (mediaKey.endsWith('.png')) {
     // For both display and API (if needed), since it's the same for images
-    displayBlob = await fetchMediaAsBlob(mediaKey, idToken, globalCameraNumber);
+    displayBlob = await fetchMediaAsBlob(mediaKey, idToken, globalBucketName_fingerprint);
     verifyBlob = displayBlob; // You can use the same blob for verification if needed
   }
 

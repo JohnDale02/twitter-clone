@@ -10,7 +10,7 @@ const PhotoLock = ({ photoLockCredentials, handleAuthMediaUpload }) => {
   const { isLoggedIn, userDetails, login, errorMessage } = useAuthentication();
   const [loginError, setLoginError] = useState(errorMessage);
   const [numColumns, setNumColumns] = useState(4);
-  const { images, loading } = useMediaGallery(userDetails?.cameraNumber);
+  const { images, loading } = useMediaGallery(userDetails?.bucketName_fingerprint); 
   const [isLoadingImage, setIsLoadingImage] = useState(false);
 
 
@@ -28,7 +28,7 @@ const PhotoLock = ({ photoLockCredentials, handleAuthMediaUpload }) => {
         await handleAuthMediaUpload(
           mediaKey,
           userDetails.idToken,
-          userDetails.cameraNumber
+          userDetails.bucketName_fingerprint
         );
       } catch (error) {
         console.error('Error uploading image:', error);

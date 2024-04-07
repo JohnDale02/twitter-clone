@@ -3,6 +3,7 @@ export type ImageData = {
   alt: string;
   isValid?: boolean;
   metadata?: {
+    fingerprint?: string;
     camera_number?: string;
     location_data?: string;
     time_data?: string;
