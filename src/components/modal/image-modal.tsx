@@ -11,6 +11,7 @@ import { backdrop, modal } from './modal';
 import type { VariantLabels } from 'framer-motion';
 import type { ImageData } from '@lib/types/file';
 import type { IconName } from '@components/ui/hero-icon';
+import styles from '../../components/photolock/styles/signature.module.css'
 
 
 type ImageModalProps = {
@@ -38,8 +39,15 @@ export function ImageModal({
   const [indexes, setIndexes] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMetadata, setShowMetadata] = useState(false); ///////// ADDED ////////////////////
-
+  const [showSignatureModal, setShowSignatureModal] = useState(false); ///////// ADDED ////////////////////
   ////////////////////////////////////////////////////////////
+
+  const handleSignatureModalToggle = (event) => {
+    // Stop click event from reaching the metadata click handler
+    if (event) event.stopPropagation();
+    
+    setShowSignatureModal(!showSignatureModal);
+  };
 
   const handleMetadataClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation(); 
@@ -160,9 +168,32 @@ export function ImageModal({
                         <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
                         <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
                         <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
-                        <div className='text-lg font-semibold'>Signature: <span className='font-light'>{imageData.metadata.signature}</span></div>
-                        {/* Signature is intentionally omitted */}
+                        {/* Center the button below the Time */}
+                        <div className='mt-4 flex justify-center'> {/* Flexbox container for centering the button */}
+                          <button
+                            className='text-white bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded cursor-pointer' // Example button styles, replace with your own classes
+                            onClick={(event) => handleSignatureModalToggle(event)} // Pass the click event to the toggle function
+                          >
+                            View Signature
+                          </button>
+                        </div>
                       </div>
+                      {showSignatureModal && (
+                        <div className={styles.signatureModalBackground}>
+                          <div className={styles.signatureModalContent}>
+                            {/* Signature modal header section */}
+                            <div className={styles.signatureModalHeader}>
+                              <h2 className={styles.signatureTitle}>Signature</h2>
+                              <button className={styles.closeSignatureButton} onClick={(event) => handleSignatureModalToggle(event)}>
+                                &times;
+                              </button>
+                            </div>
+                            <div className={styles.signatureText}>
+                              {imageData.metadata.signature}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                   <img 

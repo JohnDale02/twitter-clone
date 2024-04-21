@@ -1,0 +1,88 @@
+.modal-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 50%;
+    max-width: 600px;
+  }
+  
+  .close-button {
+    float: right;
+    cursor: pointer;
+  }
+  
+/* In your CSS or module.css file */
+.signatureModalBackground {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Overlay color */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+  
+  .signatureModalHeader {
+    display: flex; /* Enables flexbox */
+    justify-content: space-between; /* Positions the title and button on opposite ends */
+    align-items: center; /* Aligns items vertically in the center */
+    padding: 10px 20px; /* Adds some padding around the header */
+  }
+  
+  .signatureTitle {
+    margin: 0; /* Removes any default margin */
+    font-size: 24px; /* Keeps the font size for the title */
+    color: white; /* Keeps the color of the title */
+    flex-grow: 1; /* Allows the title to grow and use available space */
+  }
+  
+  .closeSignatureButton {
+    margin-left: 20px; /* Adds space between the button and the title if needed */
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: white; /* Adjust the color to ensure visibility on blue background */
+    cursor: pointer;
+  }
+  
+  .signatureText {
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    max-height: 200px; /* Set a max height for scroll on overflow */
+    overflow-y: auto; /* Allow vertical scrolling if content is too long */
+  }
+
+  .signatureModalContent {
+    margin: auto;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    max-width: 750px; /* Adjust as needed */
+    width: 90%; /* Adjust as needed */
+    background: #1DA1F2; /* The blue color matching 'View Signature' button */
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center; /* This centers the 'Signature' title */
+    word-wrap: break-word; /* This will break long unbreakable text into new lines */
+    overflow-wrap: break-word; /* Same as above, for wider browser support */
+  }
+  
+  .signatureText {
+    white-space: pre-wrap; /* Preserves spaces and line breaks */
+    word-break: break-all; /* Break the text onto the next line anywhere */
+    overflow: hidden; /* Hide the overflow */
+  }
+  
