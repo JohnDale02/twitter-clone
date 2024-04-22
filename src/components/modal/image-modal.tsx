@@ -42,7 +42,7 @@ export function ImageModal({
   const [showSignatureModal, setShowSignatureModal] = useState(false); ///////// ADDED ////////////////////
   ////////////////////////////////////////////////////////////
 
-  const handleSignatureModalToggle = (event) => {
+  const handleSignatureModalToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     // Stop click event from reaching the metadata click handler
     if (event) event.stopPropagation();
     
