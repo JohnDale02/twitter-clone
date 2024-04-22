@@ -237,27 +237,42 @@ export function ImageModal({
                   Verified by PhotoLock
                 </div>
                 {showMetadata && imageData.metadata && (
-                  <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg p-4'
-                  onClick={handleMetadataClick}
-                  >
-                    <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
-                      <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
-                      <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
-                      <div className='text-lg font-semibold'>
-                        Location: <span className='font-light'>
-                          {imageData.metadata.location_data === "None, None" ? "N/A" : imageData.metadata.location_data}
-                        </span>
+                    <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg p-4'
+                    onClick={handleMetadataClick}
+                    >
+                      <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
+                        <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
+                        <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
+                        <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
+                        <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                        {/* Center the button below the Time */}
+                        <div className='mt-4 flex justify-center'> {/* Flexbox container for centering the button */}
+                          <button
+                            className='text-white bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded cursor-pointer' // Example button styles, replace with your own classes
+                            onClick={(event) => handleSignatureModalToggle(event)} // Pass the click event to the toggle function
+                          >
+                            View Signature
+                          </button>
+                        </div>
                       </div>
-                      <div className='text-lg font-semibold'>
-                        Time: <span className='font-light'>
-                          {imageData.metadata.time_data === "None" ? "N/A" : imageData.metadata.time_data}
-                        </span>
-                      </div>
-                      <div className='text-lg font-semibold'>Signature: <span className='font-light'>{imageData.metadata.signature}</span></div>
-                      {/* Signature is intentionally omitted */}
+                      {showSignatureModal && (
+                        <div className={styles.signatureModalBackground}>
+                          <div className={styles.signatureModalContent}>
+                            {/* Signature modal header section */}
+                            <div className={styles.signatureModalHeader}>
+                              <h2 className={styles.signatureTitle}>Signature</h2>
+                              <button className={styles.closeSignatureButton} onClick={(event) => handleSignatureModalToggle(event)}>
+                                &times;
+                              </button>
+                            </div>
+                            <div className={styles.signatureText}>
+                              {imageData.metadata.signature}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  )}
                 <img 
                   src='/assets/check.png'
                   alt="Verified" 
