@@ -164,11 +164,32 @@ export function ImageModal({
                     onClick={handleMetadataClick}
                     >
                       <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
-                        <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
-                        <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
-                        <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
-                        <div className='text-lg font-semibold'>Date: <span className='font-light'>{imageData.metadata.date_data}</span></div>
-                        <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                        <div className='text-lg font-semibold'>
+                          Fingerprint: <span className='font-light'>
+                            {imageData.metadata.fingerprint === "None" ? "N/A" : imageData.metadata.fingerprint}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Camera Number: <span className='font-light'>
+                            {imageData.metadata.camera_number === "None" ? "N/A" : imageData.metadata.camera_number}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Location: <span className='font-light'>
+                            {imageData.metadata.location_data === "None, None" ? "N/A" : imageData.metadata.location_data}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Date: <span className='font-light'>
+                            {imageData.metadata.date_data === "None" ? "N/A" : imageData.metadata.date_data}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Time: <span className='font-light'>
+                            {imageData.metadata.time_data === "None" ? "N/A" : imageData.metadata.time_data}
+                          </span>
+                        </div>
+
                         {/* Center the button below the Time */}
                         <div className='mt-4 flex justify-center'> {/* Flexbox container for centering the button */}
                           <button
@@ -242,11 +263,31 @@ export function ImageModal({
                     onClick={handleMetadataClick}
                     >
                       <div className='text-center text-white rounded-lg p-4 bg-opacity-80'>
-                        <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
-                        <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
-                        <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
-                        <div className='text-lg font-semibold'>Date: <span className='font-light'>{imageData.metadata.date_data}</span></div>
-                        <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
+                        <div className='text-lg font-semibold'>
+                          Fingerprint: <span className='font-light'>
+                            {imageData.metadata.fingerprint === "None" ? "N/A" : imageData.metadata.fingerprint}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Camera Number: <span className='font-light'>
+                            {imageData.metadata.camera_number === "None" ? "N/A" : imageData.metadata.camera_number}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Location: <span className='font-light'>
+                            {imageData.metadata.location_data === "None, None" ? "N/A" : imageData.metadata.location_data}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Date: <span className='font-light'>
+                            {imageData.metadata.date_data === "None" ? "N/A" : imageData.metadata.date_data}
+                          </span>
+                        </div>
+                        <div className='text-lg font-semibold'>
+                          Time: <span className='font-light'>
+                            {imageData.metadata.time_data === "None" ? "N/A" : imageData.metadata.time_data}
+                          </span>
+                        </div>
                         {/* Center the button below the Time */}
                         <div className='mt-4 flex justify-center'> {/* Flexbox container for centering the button */}
                           <button
