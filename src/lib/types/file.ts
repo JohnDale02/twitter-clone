@@ -6,6 +6,7 @@ export type ImageData = {
     fingerprint?: string;
     camera_number?: string;
     location_data?: string;
+    date_data?: string;
     time_data?: string;
     signature?: string;
   };

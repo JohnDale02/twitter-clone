@@ -167,6 +167,7 @@ export function ImageModal({
                         <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
                         <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
                         <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
+                        <div className='text-lg font-semibold'>Date: <span className='font-light'>{imageData.metadata.date_data}</span></div>
                         <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
                         {/* Center the button below the Time */}
                         <div className='mt-4 flex justify-center'> {/* Flexbox container for centering the button */}
@@ -244,6 +245,7 @@ export function ImageModal({
                         <div className='text-lg font-semibold'>Fingerprint: <span className='font-light'>{imageData.metadata.fingerprint}</span></div>
                         <div className='text-lg font-semibold'>Camera Number: <span className='font-light'>{imageData.metadata.camera_number}</span></div>
                         <div className='text-lg font-semibold'>Location: <span className='font-light'>{imageData.metadata.location_data}</span></div>
+                        <div className='text-lg font-semibold'>Date: <span className='font-light'>{imageData.metadata.date_data}</span></div>
                         <div className='text-lg font-semibold'>Time: <span className='font-light'>{imageData.metadata.time_data}</span></div>
                         {/* Center the button below the Time */}
                         <div className='mt-4 flex justify-center'> {/* Flexbox container for centering the button */}
